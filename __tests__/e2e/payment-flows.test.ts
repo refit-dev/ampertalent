@@ -21,7 +21,7 @@ import { db } from '@/lib/db'
 // Helpers
 // ---------------------------------------------------------------------------
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2023-10-16' })
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2026-09-30.endive' })
 
 /** Created Stripe objects to delete during cleanup */
 const cleanup = {

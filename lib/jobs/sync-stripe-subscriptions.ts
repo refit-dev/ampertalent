@@ -14,9 +14,10 @@
 
 import { db } from '@/lib/db'
 import Stripe from 'stripe'
+import { getSubscriptionPeriodStart, getSubscriptionPeriodEnd, getInvoiceSubscription } from './stripe-subscription-period';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2023-10-16',
+  apiVersion: '2026-09-30.endive',
 })
 
 /**
@@ -24,13 +25,14 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
  * Called when Stripe successfully charges a subscription renewal
  */
 export async function handleInvoicePaid(invoice: Stripe.Invoice) {
-  if (!invoice.subscription) {
+  const invoiceSubscription = getInvoiceSubscription(invoice)
+  if (!invoiceSubscription) {
     return
   }
 
-  const subscriptionId = typeof invoice.subscription === 'string'
-    ? invoice.subscription
-    : invoice.subscription.id
+  const subscriptionId = typeof invoiceSubscription === 'string'
+    ? invoiceSubscription
+    : invoiceSubscription.id
 
   // Find subscription by Stripe ID
   const subscription = await db.subscription.findFirst({
@@ -51,8 +53,8 @@ export async function handleInvoicePaid(invoice: Stripe.Invoice) {
   await db.subscription.update({
     where: { id: subscription.id },
     data: {
-      currentPeriodStart: new Date(stripeSubscription.current_period_start * 1000),
-      currentPeriodEnd: new Date(stripeSubscription.current_period_end * 1000),
+      currentPeriodStart: new Date((getSubscriptionPeriodStart(stripeSubscription)) * 1000),
+      currentPeriodEnd: new Date((getSubscriptionPeriodEnd(stripeSubscription)) * 1000),
       status: 'active',
     },
   })
@@ -78,7 +80,7 @@ export async function handleInvoicePaid(invoice: Stripe.Invoice) {
       where: { userId: subscription.seekerId },
       data: {
         resumeCredits: (jobSeeker.resumeCredits || 0) + newCredits,
-        membershipExpiresAt: new Date(stripeSubscription.current_period_end * 1000),
+        membershipExpiresAt: new Date((getSubscriptionPeriodEnd(stripeSubscription)) * 1000),
       },
     })
 
@@ -126,8 +128,8 @@ export async function handleSubscriptionUpdated(
     updateData.cancelAtPeriodEnd = true
   }
 
-  if (stripeSubscription.current_period_end) {
-    updateData.currentPeriodEnd = new Date(stripeSubscription.current_period_end * 1000)
+  if ((getSubscriptionPeriodEnd(stripeSubscription))) {
+    updateData.currentPeriodEnd = new Date((getSubscriptionPeriodEnd(stripeSubscription)) * 1000)
   }
 
   await db.subscription.update({
