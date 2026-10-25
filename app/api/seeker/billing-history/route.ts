@@ -4,7 +4,7 @@ import { db } from '@/lib/db'
 import Stripe from 'stripe'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2023-10-16' as any
+  apiVersion: '2026-09-30.endive' as any
 })
 
 export async function GET(request: NextRequest) {

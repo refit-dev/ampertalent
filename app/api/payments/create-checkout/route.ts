@@ -3,7 +3,7 @@ import { getCurrentUser } from '@/lib/auth'
 import Stripe from 'stripe'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2023-10-16' as any
+  apiVersion: '2026-09-30.endive' as any
 })
 
 interface CheckoutRequest {
@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
 
     // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
+      allowed_payment_method_types: ['card'],
       line_items: [
         {
           price_data: {
