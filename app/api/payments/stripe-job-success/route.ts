@@ -6,7 +6,7 @@ import { inAppNotificationService } from '@/lib/in-app-notification-service'
 import { ensureDemoRoleRows } from '@/lib/demo-role-backfill'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-    apiVersion: '2023-10-16' as any
+    apiVersion: '2026-09-30.endive' as any
 })
 
 const PACKAGE_LISTINGS: Record<string, number> = {
